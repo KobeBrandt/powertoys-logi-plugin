@@ -41,6 +41,7 @@ public class FindMyMouse : PowerToy
                     this.defaultShortcut = shortcut;
                 }
 
+                base.RunCommand(actionParameters);
                 break;
         }
     }
