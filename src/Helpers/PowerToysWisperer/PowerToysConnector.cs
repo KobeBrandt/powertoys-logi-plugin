@@ -98,6 +98,10 @@ public static class PowerToysConnector
                 settingsPath = Path.Combine(localAppData, "Microsoft", "PowerToys", "MousePointerCrosshairs",
                     "settings.json");
             }
+            else if (name is "AltWindowCycleNext" or "AltWindowCyclePrevious")
+            {
+                settingsPath = Path.Combine(localAppData, "Microsoft", "PowerToys", "AltWindowCycle", "settings.json");
+            }
             else if (name == "PowerToysRun")
             {
                 settingsPath = Path.Combine(localAppData, "Microsoft", "PowerToys", "PowerToys Run", "settings.json");
@@ -144,6 +148,14 @@ public static class PowerToysConnector
             else if (name == "Thumbnail" && settings?.Properties?.ThumbnailHotkey?.Value != null)
             {
                 shortcutObj = settings.Properties.ThumbnailHotkey.Value;
+            }
+            else if (name == "AltWindowCycleNext" && settings?.Properties?.NextWindowShortcut != null)
+            {
+                shortcutObj = settings.Properties.NextWindowShortcut;
+            }
+            else if (name == "AltWindowCyclePrevious" && settings?.Properties?.PreviousWindowShortcut != null)
+            {
+                shortcutObj = settings.Properties.PreviousWindowShortcut;
             }
             else if (name == "PowerToysRun")
             {
