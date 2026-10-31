@@ -51,6 +51,12 @@ public class SettingsProperties
     [JsonPropertyName("gliding_cursor_activation_shortcut")]
     public ActivationShortcut GlidingCursorActivationShortcut { get; set; }
 
+    [JsonPropertyName("fancyzones_nextTab_hotkey")]
+    public SettingValue<ActivationShortcut> FancyZonesNextTabHotkey { get; set; }
+
+    [JsonPropertyName("fancyzones_prevTab_hotkey")]
+    public SettingValue<ActivationShortcut> FancyZonesPrevTabHotkey { get; set; }
+
     [JsonPropertyName("next_window_shortcut")]
     public ActivationShortcut NextWindowShortcut { get; set; }
 

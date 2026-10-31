@@ -89,6 +89,10 @@ public static class PowerToysConnector
                 settingsPath = Path.Combine(localAppData, "Packages", "Microsoft.CommandPalette_8wekyb3d8bbwe",
                     "LocalState", "settings.json");
             }
+            else if (name is "FancyZonesNextTab" or "FancyZonesPreviousTab")
+            {
+                settingsPath = Path.Combine(localAppData, "Microsoft", "PowerToys", "FancyZones", "settings.json");
+            }
             else if (name == "PasteAsPlainText")
             {
                 settingsPath = Path.Combine(localAppData, "Microsoft", "PowerToys", "AdvancedPaste", "settings.json");
@@ -148,6 +152,14 @@ public static class PowerToysConnector
             else if (name == "Thumbnail" && settings?.Properties?.ThumbnailHotkey?.Value != null)
             {
                 shortcutObj = settings.Properties.ThumbnailHotkey.Value;
+            }
+            else if (name == "FancyZonesNextTab" && settings?.Properties?.FancyZonesNextTabHotkey?.Value != null)
+            {
+                shortcutObj = settings.Properties.FancyZonesNextTabHotkey.Value;
+            }
+            else if (name == "FancyZonesPreviousTab" && settings?.Properties?.FancyZonesPrevTabHotkey?.Value != null)
+            {
+                shortcutObj = settings.Properties.FancyZonesPrevTabHotkey.Value;
             }
             else if (name == "AltWindowCycleNext" && settings?.Properties?.NextWindowShortcut != null)
             {
