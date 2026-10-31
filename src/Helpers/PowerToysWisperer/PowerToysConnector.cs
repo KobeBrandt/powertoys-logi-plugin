@@ -89,6 +89,10 @@ public static class PowerToysConnector
                 settingsPath = Path.Combine(localAppData, "Packages", "Microsoft.CommandPalette_8wekyb3d8bbwe",
                     "LocalState", "settings.json");
             }
+            else if (name == "PasteAsPlainText")
+            {
+                settingsPath = Path.Combine(localAppData, "Microsoft", "PowerToys", "AdvancedPaste", "settings.json");
+            }
             else if (name == "PowerToysRun")
             {
                 settingsPath = Path.Combine(localAppData, "Microsoft", "PowerToys", "PowerToys Run", "settings.json");
@@ -186,6 +190,10 @@ public static class PowerToysConnector
                 {
                     shortcutObj = hotkey.Deserialize<ActivationShortcut>();
                 }
+            }
+            else if (name == "PasteAsPlainText" && settings?.Properties?.PasteAsPlainHotkey != null)
+            {
+                shortcutObj = settings.Properties.PasteAsPlainHotkey;
             }
             else if (name == "Screenshot" && settings?.Properties?.ActivationShortcut.ValueKind == JsonValueKind.Object)
             {
