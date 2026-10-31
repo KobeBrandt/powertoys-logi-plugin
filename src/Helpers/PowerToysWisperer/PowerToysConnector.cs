@@ -85,7 +85,9 @@ public static class PowerToysConnector
             }
             else if (name == "CommandPalette")
             {
-                settingsPath = Path.Combine(localAppData, "Microsoft", "PowerToys", "CommandPalette", "settings.json");
+                // Command Palette is a packaged app and keeps its settings in the package LocalState folder.
+                settingsPath = Path.Combine(localAppData, "Packages", "Microsoft.CommandPalette_8wekyb3d8bbwe",
+                    "LocalState", "settings.json");
             }
             else if (name == "PowerToysRun")
             {
@@ -174,6 +176,16 @@ public static class PowerToysConnector
             else if (name == "Screenshot" && settings?.Properties?.ScreenshotHotkey?.Value != null)
             {
                 shortcutObj = settings.Properties.ScreenshotHotkey.Value;
+            }
+            else if (name == "CommandPalette")
+            {
+                // Command Palette stores its hotkey at the root of the file, not under "properties".
+                var doc = JsonDocument.Parse(jsonContent);
+                if (doc.RootElement.TryGetProperty("Hotkey", out var hotkey) &&
+                    hotkey.ValueKind == JsonValueKind.Object)
+                {
+                    shortcutObj = hotkey.Deserialize<ActivationShortcut>();
+                }
             }
             else if (name == "Screenshot" && settings?.Properties?.ActivationShortcut.ValueKind == JsonValueKind.Object)
             {
