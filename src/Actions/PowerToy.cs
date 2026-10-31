@@ -6,7 +6,8 @@ using Loupedeck.WindowsPowerToysPlugin.Helpers;
 using Loupedeck.WindowsPowerToysPlugin.Helpers.PowerToysWisperer;
 
 // Each PowerToy is a plain (non-parameterized) command, so button assignments keep working across versions.
-// While its PowerToys module is turned off the action is disabled; the plugin also tries to hide it.
+// While its PowerToys module is turned off the action shows as disabled. It is not hidden: removing an action
+// breaks buttons it is assigned to, and the plugin service does not pick up an action that is added back.
 public abstract class PowerToy : PluginDynamicCommand
 {
     protected readonly String _Icon;
@@ -40,9 +41,6 @@ public abstract class PowerToy : PluginDynamicCommand
         this.Description = "Activate the PowerToy for " + displayName + ".";
     }
 
-    // Gets the PowerToy name used to look up its settings and whether its module is turned on.
-    public String PowerToyName => this._Name;
-
     private PowerToysModules Modules => ((WindowsPowerToysPlugin)this.Plugin).Modules;
 
     protected override BitmapImage GetCommandImage(String actionParameter, PluginImageSize imageSize)
@@ -63,8 +61,6 @@ public abstract class PowerToy : PluginDynamicCommand
     protected override Boolean OnLoad()
     {
         this.LoadShortcut();
-        // OnLoad can run again when a hidden action is added back, so never subscribe twice.
-        this.Modules.EnabledChanged -= this.OnModulesEnabledChanged;
         this.Modules.EnabledChanged += this.OnModulesEnabledChanged;
         this.IsEnabled = this.Modules.IsEnabled(this._Name);
         return true;
