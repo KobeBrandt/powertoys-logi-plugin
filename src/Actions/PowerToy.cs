@@ -5,23 +5,22 @@ using Loupedeck.WindowsPowerToysPlugin;
 using Loupedeck.WindowsPowerToysPlugin.Helpers;
 using Loupedeck.WindowsPowerToysPlugin.Helpers.PowerToysWisperer;
 
-// Each PowerToy is a parameterized command with at most one parameter (its name). The parameter is only added
-// while the PowerToys module is turned on, so actions of turned-off modules are hidden from the action list.
+// Each PowerToy is a plain (non-parameterized) command, so button assignments keep working across versions.
+// While its PowerToys module is turned off the action is disabled; the plugin also tries to hide it.
 public abstract class PowerToy : PluginDynamicCommand
 {
     protected readonly String _Icon;
     protected readonly String _Name;
-    protected readonly String _DisplayName;
     protected String defaultShortcut;
     private String image;
 
     public PowerToy(String name, String displayName, String shortcut, String groupName = null,
         String extraGroupName = null, String icon = null)
-        : base()
+        : base(displayName, "Activate the PowerToy for " + displayName + ".", groupName)
     {
         this._Name = name;
-        this._DisplayName = displayName;
         this.defaultShortcut = shortcut;
+        this.DisplayName = displayName;
         this.GroupName = groupName;
         if (extraGroupName != null)
         {
@@ -37,7 +36,12 @@ public abstract class PowerToy : PluginDynamicCommand
         {
             this._Icon = name;
         }
+
+        this.Description = "Activate the PowerToy for " + displayName + ".";
     }
+
+    // Gets the PowerToy name used to look up its settings and whether its module is turned on.
+    public String PowerToyName => this._Name;
 
     private PowerToysModules Modules => ((WindowsPowerToysPlugin)this.Plugin).Modules;
 
@@ -52,15 +56,17 @@ public abstract class PowerToy : PluginDynamicCommand
             PluginLog.Error(e, "Failed to find image");
         }
 
-        return BitmapHelper.MakeBitmapImage(this.image, imageSize, this._DisplayName);
+        return BitmapHelper.MakeBitmapImage(this.image, imageSize, this.DisplayName);
     }
 
 
     protected override Boolean OnLoad()
     {
         this.LoadShortcut();
+        // OnLoad can run again when a hidden action is added back, so never subscribe twice.
+        this.Modules.EnabledChanged -= this.OnModulesEnabledChanged;
         this.Modules.EnabledChanged += this.OnModulesEnabledChanged;
-        this.UpdateParameter();
+        this.IsEnabled = this.Modules.IsEnabled(this._Name);
         return true;
     }
 
@@ -84,17 +90,7 @@ public abstract class PowerToy : PluginDynamicCommand
     {
         // The user may have changed the hotkey while the module was turned off.
         this.LoadShortcut();
-        this.UpdateParameter();
-        this.ParametersChanged(); // Notify the plugin service that the list of actions has changed.
-    }
-
-    private void UpdateParameter()
-    {
-        this.RemoveAllParameters();
-        if (this.Modules.IsEnabled(this._Name))
-        {
-            this.AddParameter(this._Name, this._DisplayName, this.GroupName);
-        }
+        this.IsEnabled = this.Modules.IsEnabled(this._Name);
     }
 
     protected override void RunCommand(String actionParameters)
