@@ -49,7 +49,7 @@ public abstract class PowerToy : PluginDynamicCommand
             PluginLog.Error(e, "Failed to find image");
         }
 
-        return BitmapHelper.MakeBitmapImage(this.image, imageSize);
+        return BitmapHelper.MakeBitmapImage(this.image, imageSize, this.DisplayName);
     }
 
 
