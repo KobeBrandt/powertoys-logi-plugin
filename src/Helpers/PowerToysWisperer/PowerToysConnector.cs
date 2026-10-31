@@ -477,6 +477,14 @@ public static class PowerToysConnector
                     {
                         shortcutStr += "Key`";
                     }
+                    else if (shortcutObj.Code == 33)
+                    {
+                        shortcutStr += "PageUp";
+                    }
+                    else if (shortcutObj.Code == 34)
+                    {
+                        shortcutStr += "PageDown";
+                    }
                     else if (shortcutObj.Code >= 37 && shortcutObj.Code <= 40)
                     {
                         var arrowKeys = new[] { "ArrowLeft", "ArrowUp", "ArrowRight", "ArrowDown" };

@@ -74,6 +74,16 @@ public static class ShortcutHelper
             return VirtualKeyCode.ArrowDown;
         }
 
+        if (shortcut.Contains("PageUp"))
+        {
+            return VirtualKeyCode.PageUp;
+        }
+
+        if (shortcut.Contains("PageDown"))
+        {
+            return VirtualKeyCode.PageDown;
+        }
+
         return VirtualKeyCode.None;
     }
 }
