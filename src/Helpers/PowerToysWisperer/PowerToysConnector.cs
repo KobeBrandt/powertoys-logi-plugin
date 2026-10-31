@@ -79,7 +79,7 @@ public static class PowerToysConnector
             var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             var settingsPath = Path.Combine(localAppData, "Microsoft", "PowerToys", name, "settings.json");
 
-            if (name is "Reparent" or "Thumbnail")
+            if (name is "Reparent" or "Thumbnail" or "Screenshot")
             {
                 settingsPath = Path.Combine(localAppData, "Microsoft", "PowerToys", "CropAndLock", "settings.json");
             }
@@ -170,6 +170,10 @@ public static class PowerToysConnector
                         }
                     }
                 }
+            }
+            else if (name == "Screenshot" && settings?.Properties?.ScreenshotHotkey?.Value != null)
+            {
+                shortcutObj = settings.Properties.ScreenshotHotkey.Value;
             }
             else if (name == "Screenshot" && settings?.Properties?.ActivationShortcut.ValueKind == JsonValueKind.Object)
             {
