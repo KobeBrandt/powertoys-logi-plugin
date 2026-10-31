@@ -93,6 +93,11 @@ public static class PowerToysConnector
             {
                 settingsPath = Path.Combine(localAppData, "Microsoft", "PowerToys", "AdvancedPaste", "settings.json");
             }
+            else if (name == "GlidingCursor")
+            {
+                settingsPath = Path.Combine(localAppData, "Microsoft", "PowerToys", "MousePointerCrosshairs",
+                    "settings.json");
+            }
             else if (name == "PowerToysRun")
             {
                 settingsPath = Path.Combine(localAppData, "Microsoft", "PowerToys", "PowerToys Run", "settings.json");
@@ -194,6 +199,10 @@ public static class PowerToysConnector
             else if (name == "PasteAsPlainText" && settings?.Properties?.PasteAsPlainHotkey != null)
             {
                 shortcutObj = settings.Properties.PasteAsPlainHotkey;
+            }
+            else if (name == "GlidingCursor" && settings?.Properties?.GlidingCursorActivationShortcut != null)
+            {
+                shortcutObj = settings.Properties.GlidingCursorActivationShortcut;
             }
             else if (name == "Screenshot" && settings?.Properties?.ActivationShortcut.ValueKind == JsonValueKind.Object)
             {

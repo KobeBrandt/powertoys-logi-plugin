@@ -48,6 +48,9 @@ public class SettingsProperties
 
     [JsonPropertyName("screenshot-hotkey")] public SettingValue<ActivationShortcut> ScreenshotHotkey { get; set; }
 
+    [JsonPropertyName("gliding_cursor_activation_shortcut")]
+    public ActivationShortcut GlidingCursorActivationShortcut { get; set; }
+
     [JsonPropertyName("activation_shortcut")]
     public ActivationShortcut activation_shortcut { get; set; }
 
