@@ -93,7 +93,7 @@ public static class PowerToysConnector
             {
                 settingsPath = Path.Combine(localAppData, "Microsoft", "PowerToys", "FancyZones", "settings.json");
             }
-            else if (name == "PasteAsPlainText")
+            else if (name is "PasteAsPlainText" or "PasteAsMarkdown" or "PasteAsJson")
             {
                 settingsPath = Path.Combine(localAppData, "Microsoft", "PowerToys", "AdvancedPaste", "settings.json");
             }
@@ -160,6 +160,14 @@ public static class PowerToysConnector
             else if (name == "FancyZonesPreviousTab" && settings?.Properties?.FancyZonesPrevTabHotkey?.Value != null)
             {
                 shortcutObj = settings.Properties.FancyZonesPrevTabHotkey.Value;
+            }
+            else if (name == "PasteAsMarkdown" && settings?.Properties?.PasteAsMarkdownHotkey != null)
+            {
+                shortcutObj = settings.Properties.PasteAsMarkdownHotkey;
+            }
+            else if (name == "PasteAsJson" && settings?.Properties?.PasteAsJsonHotkey != null)
+            {
+                shortcutObj = settings.Properties.PasteAsJsonHotkey;
             }
             else if (name == "AltWindowCycleNext" && settings?.Properties?.NextWindowShortcut != null)
             {
