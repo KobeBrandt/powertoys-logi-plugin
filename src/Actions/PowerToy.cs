@@ -5,20 +5,23 @@ using Loupedeck.WindowsPowerToysPlugin;
 using Loupedeck.WindowsPowerToysPlugin.Helpers;
 using Loupedeck.WindowsPowerToysPlugin.Helpers.PowerToysWisperer;
 
+// Each PowerToy is a parameterized command with at most one parameter (its name). The parameter is only added
+// while the PowerToys module is turned on, so actions of turned-off modules are hidden from the action list.
 public abstract class PowerToy : PluginDynamicCommand
 {
     protected readonly String _Icon;
     protected readonly String _Name;
+    protected readonly String _DisplayName;
     protected String defaultShortcut;
     private String image;
 
     public PowerToy(String name, String displayName, String shortcut, String groupName = null,
         String extraGroupName = null, String icon = null)
-        : base(displayName, "Activate the PowerToy for " + displayName + ".", groupName)
+        : base()
     {
         this._Name = name;
+        this._DisplayName = displayName;
         this.defaultShortcut = shortcut;
-        this.DisplayName = displayName;
         this.GroupName = groupName;
         if (extraGroupName != null)
         {
@@ -34,9 +37,9 @@ public abstract class PowerToy : PluginDynamicCommand
         {
             this._Icon = name;
         }
-
-        this.Description = "Activate the PowerToy for " + displayName + ".";
     }
+
+    private PowerToysModules Modules => ((WindowsPowerToysPlugin)this.Plugin).Modules;
 
     protected override BitmapImage GetCommandImage(String actionParameter, PluginImageSize imageSize)
     {
@@ -49,19 +52,49 @@ public abstract class PowerToy : PluginDynamicCommand
             PluginLog.Error(e, "Failed to find image");
         }
 
-        return BitmapHelper.MakeBitmapImage(this.image, imageSize, this.DisplayName);
+        return BitmapHelper.MakeBitmapImage(this.image, imageSize, this._DisplayName);
     }
 
 
     protected override Boolean OnLoad()
+    {
+        this.LoadShortcut();
+        this.Modules.EnabledChanged += this.OnModulesEnabledChanged;
+        this.UpdateParameter();
+        return true;
+    }
+
+    protected override Boolean OnUnload()
+    {
+        this.Modules.EnabledChanged -= this.OnModulesEnabledChanged;
+        return true;
+    }
+
+    // Reads the module's current hotkey from the PowerToys settings, keeping the default when none is set.
+    protected virtual void LoadShortcut()
     {
         var settingsShortcut = PowerToysConnector.GetShortcutFromSettings(this._Name);
         if (!String.IsNullOrEmpty(settingsShortcut))
         {
             this.defaultShortcut = settingsShortcut;
         }
+    }
 
-        return true;
+    private void OnModulesEnabledChanged(Object sender, EventArgs e)
+    {
+        // The user may have changed the hotkey while the module was turned off.
+        this.LoadShortcut();
+        this.UpdateParameter();
+        this.ParametersChanged(); // Notify the plugin service that the list of actions has changed.
+    }
+
+    private void UpdateParameter()
+    {
+        this.RemoveAllParameters();
+        if (this.Modules.IsEnabled(this._Name))
+        {
+            this.AddParameter(this._Name, this._DisplayName, this.GroupName);
+        }
     }
 
     protected override void RunCommand(String actionParameters)
