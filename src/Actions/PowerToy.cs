@@ -99,26 +99,25 @@ public abstract class PowerToy : PluginDynamicCommand
         PluginLog.Info($"{this._Name} | Sending shortcut: {this.defaultShortcut}");
         try
         {
-            var shortcut = String.IsNullOrEmpty(this.defaultShortcut) ? this.defaultShortcut : this.defaultShortcut;
-            if (shortcut == "None___0______")
-            {
-                shortcut = this.defaultShortcut;
-            }
-
-
+            var shortcut = this.defaultShortcut;
+            var modifiers = ShortcutHelper.GetModifiers(shortcut);
             var letter = ShortcutHelper.GetChar(shortcut);
             if (letter != '?')
             {
-                this.Plugin.ClientApplication.SendKeyboardShortcut(letter, ShortcutHelper.GetModifiers(shortcut));
-                PluginLog.Info($"Sent shortcut: {letter} + {ShortcutHelper.GetModifiers(shortcut)}");
+                this.Plugin.ClientApplication.SendKeyboardShortcut(letter, modifiers);
+                PluginLog.Info($"Sent shortcut: {letter} + {modifiers}");
+                return;
             }
-            else
+
+            var key = ShortcutHelper.GetVirtualKeyCode(shortcut);
+            if (key == VirtualKeyCode.None)
             {
-                this.Plugin.ClientApplication.SendKeyboardShortcut(ShortcutHelper.GetVirtualKeyCode(shortcut),
-                    ShortcutHelper.GetModifiers(shortcut));
-                PluginLog.Info(
-                    $"Sent shortcut: {ShortcutHelper.GetVirtualKeyCode(shortcut)} + {ShortcutHelper.GetModifiers(shortcut)}");
+                PluginLog.Error($"{this._Name} | Cannot read a key from shortcut: {shortcut}");
+                return;
             }
+
+            this.Plugin.ClientApplication.SendKeyboardShortcut(key, modifiers);
+            PluginLog.Info($"Sent shortcut: {key} + {modifiers}");
         }
         catch (Exception ex)
         {

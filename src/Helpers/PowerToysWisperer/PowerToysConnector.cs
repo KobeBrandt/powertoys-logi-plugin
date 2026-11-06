@@ -510,10 +510,20 @@ public static class PowerToysConnector
                         var arrowKeys = new[] { "ArrowLeft", "ArrowUp", "ArrowRight", "ArrowDown" };
                         shortcutStr += arrowKeys[shortcutObj.Code - 37];
                     }
+                    else if (shortcutObj.Code is >= 48 and <= 57 or >= 65 and <= 90)
+                    {
+                        // Digits and letters have the same virtual key code as their character.
+                        shortcutStr += "Key" + (Char)shortcutObj.Code;
+                    }
+                    else if (Enum.IsDefined(typeof(VirtualKeyCode), (UInt16)shortcutObj.Code))
+                    {
+                        // Other keys (F1-F24, Delete, numpad, ...) are written by name, for example "F5".
+                        shortcutStr += ((VirtualKeyCode)shortcutObj.Code).ToString();
+                    }
                     else
                     {
-                        var keyChar = (Char)shortcutObj.Code;
-                        shortcutStr += "Key" + Char.ToUpper(keyChar);
+                        PluginLog.Error($"{name} | Key code {shortcutObj.Code} is not supported");
+                        return null;
                     }
                 }
 
