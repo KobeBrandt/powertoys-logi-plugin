@@ -52,28 +52,12 @@ public static class ShortcutHelper
         return '?';
     }
 
+    // Reads a named key such as "ArrowLeft", "PageDown" or "F5" from the last part of the shortcut.
     public static VirtualKeyCode GetVirtualKeyCode(String shortcut)
     {
-        if (shortcut.Contains("ArrowLeft"))
-        {
-            return VirtualKeyCode.ArrowLeft;
-        }
-
-        if (shortcut.Contains("ArrowRight"))
-        {
-            return VirtualKeyCode.ArrowRight;
-        }
-
-        if (shortcut.Contains("ArrowUp"))
-        {
-            return VirtualKeyCode.ArrowUp;
-        }
-
-        if (shortcut.Contains("ArrowDown"))
-        {
-            return VirtualKeyCode.ArrowDown;
-        }
-
-        return VirtualKeyCode.None;
+        var keyName = shortcut.Split('+').Last().Trim();
+        return Enum.TryParse<VirtualKeyCode>(keyName, true, out var key) && Enum.IsDefined(key)
+            ? key
+            : VirtualKeyCode.None;
     }
 }

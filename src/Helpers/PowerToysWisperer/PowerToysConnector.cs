@@ -79,13 +79,32 @@ public static class PowerToysConnector
             var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             var settingsPath = Path.Combine(localAppData, "Microsoft", "PowerToys", name, "settings.json");
 
-            if (name is "Reparent" or "Thumbnail")
+            if (name is "Reparent" or "Thumbnail" or "Screenshot")
             {
                 settingsPath = Path.Combine(localAppData, "Microsoft", "PowerToys", "CropAndLock", "settings.json");
             }
             else if (name == "CommandPalette")
             {
-                settingsPath = Path.Combine(localAppData, "Microsoft", "PowerToys", "CommandPalette", "settings.json");
+                // Command Palette is a packaged app and keeps its settings in the package LocalState folder.
+                settingsPath = Path.Combine(localAppData, "Packages", "Microsoft.CommandPalette_8wekyb3d8bbwe",
+                    "LocalState", "settings.json");
+            }
+            else if (name is "FancyZonesNextTab" or "FancyZonesPreviousTab")
+            {
+                settingsPath = Path.Combine(localAppData, "Microsoft", "PowerToys", "FancyZones", "settings.json");
+            }
+            else if (name is "PasteAsPlainText" or "PasteAsMarkdown" or "PasteAsJson")
+            {
+                settingsPath = Path.Combine(localAppData, "Microsoft", "PowerToys", "AdvancedPaste", "settings.json");
+            }
+            else if (name == "GlidingCursor")
+            {
+                settingsPath = Path.Combine(localAppData, "Microsoft", "PowerToys", "MousePointerCrosshairs",
+                    "settings.json");
+            }
+            else if (name is "AltWindowCycleNext" or "AltWindowCyclePrevious")
+            {
+                settingsPath = Path.Combine(localAppData, "Microsoft", "PowerToys", "AltWindowCycle", "settings.json");
             }
             else if (name == "PowerToysRun")
             {
@@ -134,6 +153,30 @@ public static class PowerToysConnector
             {
                 shortcutObj = settings.Properties.ThumbnailHotkey.Value;
             }
+            else if (name == "FancyZonesNextTab" && settings?.Properties?.FancyZonesNextTabHotkey?.Value != null)
+            {
+                shortcutObj = settings.Properties.FancyZonesNextTabHotkey.Value;
+            }
+            else if (name == "FancyZonesPreviousTab" && settings?.Properties?.FancyZonesPrevTabHotkey?.Value != null)
+            {
+                shortcutObj = settings.Properties.FancyZonesPrevTabHotkey.Value;
+            }
+            else if (name == "PasteAsMarkdown" && settings?.Properties?.PasteAsMarkdownHotkey != null)
+            {
+                shortcutObj = settings.Properties.PasteAsMarkdownHotkey;
+            }
+            else if (name == "PasteAsJson" && settings?.Properties?.PasteAsJsonHotkey != null)
+            {
+                shortcutObj = settings.Properties.PasteAsJsonHotkey;
+            }
+            else if (name == "AltWindowCycleNext" && settings?.Properties?.NextWindowShortcut != null)
+            {
+                shortcutObj = settings.Properties.NextWindowShortcut;
+            }
+            else if (name == "AltWindowCyclePrevious" && settings?.Properties?.PreviousWindowShortcut != null)
+            {
+                shortcutObj = settings.Properties.PreviousWindowShortcut;
+            }
             else if (name == "PowerToysRun")
             {
                 if (settings?.Properties?.open_powerlauncher != null)
@@ -170,6 +213,28 @@ public static class PowerToysConnector
                         }
                     }
                 }
+            }
+            else if (name == "Screenshot" && settings?.Properties?.ScreenshotHotkey?.Value != null)
+            {
+                shortcutObj = settings.Properties.ScreenshotHotkey.Value;
+            }
+            else if (name == "CommandPalette")
+            {
+                // Command Palette stores its hotkey at the root of the file, not under "properties".
+                var doc = JsonDocument.Parse(jsonContent);
+                if (doc.RootElement.TryGetProperty("Hotkey", out var hotkey) &&
+                    hotkey.ValueKind == JsonValueKind.Object)
+                {
+                    shortcutObj = hotkey.Deserialize<ActivationShortcut>();
+                }
+            }
+            else if (name == "PasteAsPlainText" && settings?.Properties?.PasteAsPlainHotkey != null)
+            {
+                shortcutObj = settings.Properties.PasteAsPlainHotkey;
+            }
+            else if (name == "GlidingCursor" && settings?.Properties?.GlidingCursorActivationShortcut != null)
+            {
+                shortcutObj = settings.Properties.GlidingCursorActivationShortcut;
             }
             else if (name == "Screenshot" && settings?.Properties?.ActivationShortcut.ValueKind == JsonValueKind.Object)
             {
@@ -432,15 +497,33 @@ public static class PowerToysConnector
                     {
                         shortcutStr += "Key`";
                     }
+                    else if (shortcutObj.Code == 33)
+                    {
+                        shortcutStr += "PageUp";
+                    }
+                    else if (shortcutObj.Code == 34)
+                    {
+                        shortcutStr += "PageDown";
+                    }
                     else if (shortcutObj.Code >= 37 && shortcutObj.Code <= 40)
                     {
                         var arrowKeys = new[] { "ArrowLeft", "ArrowUp", "ArrowRight", "ArrowDown" };
                         shortcutStr += arrowKeys[shortcutObj.Code - 37];
                     }
+                    else if (shortcutObj.Code is >= 48 and <= 57 or >= 65 and <= 90)
+                    {
+                        // Digits and letters have the same virtual key code as their character.
+                        shortcutStr += "Key" + (Char)shortcutObj.Code;
+                    }
+                    else if (Enum.IsDefined(typeof(VirtualKeyCode), (UInt16)shortcutObj.Code))
+                    {
+                        // Other keys (F1-F24, Delete, numpad, ...) are written by name, for example "F5".
+                        shortcutStr += ((VirtualKeyCode)shortcutObj.Code).ToString();
+                    }
                     else
                     {
-                        var keyChar = (Char)shortcutObj.Code;
-                        shortcutStr += "Key" + Char.ToUpper(keyChar);
+                        PluginLog.Error($"{name} | Key code {shortcutObj.Code} is not supported");
+                        return null;
                     }
                 }
 

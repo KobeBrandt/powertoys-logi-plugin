@@ -46,6 +46,23 @@ public class SettingsProperties
 
     [JsonPropertyName("thumbnail-hotkey")] public SettingValue<ActivationShortcut> ThumbnailHotkey { get; set; }
 
+    [JsonPropertyName("screenshot-hotkey")] public SettingValue<ActivationShortcut> ScreenshotHotkey { get; set; }
+
+    [JsonPropertyName("gliding_cursor_activation_shortcut")]
+    public ActivationShortcut GlidingCursorActivationShortcut { get; set; }
+
+    [JsonPropertyName("fancyzones_nextTab_hotkey")]
+    public SettingValue<ActivationShortcut> FancyZonesNextTabHotkey { get; set; }
+
+    [JsonPropertyName("fancyzones_prevTab_hotkey")]
+    public SettingValue<ActivationShortcut> FancyZonesPrevTabHotkey { get; set; }
+
+    [JsonPropertyName("next_window_shortcut")]
+    public ActivationShortcut NextWindowShortcut { get; set; }
+
+    [JsonPropertyName("previous_window_shortcut")]
+    public ActivationShortcut PreviousWindowShortcut { get; set; }
+
     [JsonPropertyName("activation_shortcut")]
     public ActivationShortcut activation_shortcut { get; set; }
 

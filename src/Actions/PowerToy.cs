@@ -5,6 +5,9 @@ using Loupedeck.WindowsPowerToysPlugin;
 using Loupedeck.WindowsPowerToysPlugin.Helpers;
 using Loupedeck.WindowsPowerToysPlugin.Helpers.PowerToysWisperer;
 
+// Each PowerToy is a plain (non-parameterized) command, so button assignments keep working across versions.
+// While its PowerToys module is turned off the action shows as disabled. It is not hidden: removing an action
+// breaks buttons it is assigned to, and the plugin service does not pick up an action that is added back.
 public abstract class PowerToy : PluginDynamicCommand
 {
     protected readonly String _Icon;
@@ -38,6 +41,8 @@ public abstract class PowerToy : PluginDynamicCommand
         this.Description = "Activate the PowerToy for " + displayName + ".";
     }
 
+    private PowerToysModules Modules => ((WindowsPowerToysPlugin)this.Plugin).Modules;
+
     protected override BitmapImage GetCommandImage(String actionParameter, PluginImageSize imageSize)
     {
         try
@@ -49,19 +54,39 @@ public abstract class PowerToy : PluginDynamicCommand
             PluginLog.Error(e, "Failed to find image");
         }
 
-        return BitmapHelper.MakeBitmapImage(this.image, imageSize);
+        return BitmapHelper.MakeBitmapImage(this.image, imageSize, this.DisplayName);
     }
 
 
     protected override Boolean OnLoad()
+    {
+        this.LoadShortcut();
+        this.Modules.EnabledChanged += this.OnModulesEnabledChanged;
+        this.IsEnabled = this.Modules.IsEnabled(this._Name);
+        return true;
+    }
+
+    protected override Boolean OnUnload()
+    {
+        this.Modules.EnabledChanged -= this.OnModulesEnabledChanged;
+        return true;
+    }
+
+    // Reads the module's current hotkey from the PowerToys settings, keeping the default when none is set.
+    protected virtual void LoadShortcut()
     {
         var settingsShortcut = PowerToysConnector.GetShortcutFromSettings(this._Name);
         if (!String.IsNullOrEmpty(settingsShortcut))
         {
             this.defaultShortcut = settingsShortcut;
         }
+    }
 
-        return true;
+    private void OnModulesEnabledChanged(Object sender, EventArgs e)
+    {
+        // The user may have changed the hotkey while the module was turned off.
+        this.LoadShortcut();
+        this.IsEnabled = this.Modules.IsEnabled(this._Name);
     }
 
     protected override void RunCommand(String actionParameters)
@@ -74,26 +99,25 @@ public abstract class PowerToy : PluginDynamicCommand
         PluginLog.Info($"{this._Name} | Sending shortcut: {this.defaultShortcut}");
         try
         {
-            var shortcut = String.IsNullOrEmpty(this.defaultShortcut) ? this.defaultShortcut : this.defaultShortcut;
-            if (shortcut == "None___0______")
-            {
-                shortcut = this.defaultShortcut;
-            }
-
-
+            var shortcut = this.defaultShortcut;
+            var modifiers = ShortcutHelper.GetModifiers(shortcut);
             var letter = ShortcutHelper.GetChar(shortcut);
             if (letter != '?')
             {
-                this.Plugin.ClientApplication.SendKeyboardShortcut(letter, ShortcutHelper.GetModifiers(shortcut));
-                PluginLog.Info($"Sent shortcut: {letter} + {ShortcutHelper.GetModifiers(shortcut)}");
+                this.Plugin.ClientApplication.SendKeyboardShortcut(letter, modifiers);
+                PluginLog.Info($"Sent shortcut: {letter} + {modifiers}");
+                return;
             }
-            else
+
+            var key = ShortcutHelper.GetVirtualKeyCode(shortcut);
+            if (key == VirtualKeyCode.None)
             {
-                this.Plugin.ClientApplication.SendKeyboardShortcut(ShortcutHelper.GetVirtualKeyCode(shortcut),
-                    ShortcutHelper.GetModifiers(shortcut));
-                PluginLog.Info(
-                    $"Sent shortcut: {ShortcutHelper.GetVirtualKeyCode(shortcut)} + {ShortcutHelper.GetModifiers(shortcut)}");
+                PluginLog.Error($"{this._Name} | Cannot read a key from shortcut: {shortcut}");
+                return;
             }
+
+            this.Plugin.ClientApplication.SendKeyboardShortcut(key, modifiers);
+            PluginLog.Info($"Sent shortcut: {key} + {modifiers}");
         }
         catch (Exception ex)
         {
