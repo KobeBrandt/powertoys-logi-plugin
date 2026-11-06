@@ -109,8 +109,6 @@
         <None Remove="Resources\actionsymbols\TextExtractor.svg"/>
         <None Remove="Resources\actionsymbols\Workspaces.svg"/>
         <None Remove="Resources\actionsymbols\Loupedeck.DemoPlugin.ColorPicker.svg"/>
-        <None Remove="Resources\actionicons\GrabAndMove.png"/>
-        <EmbeddedResource Include="Resources\actionicons\GrabAndMove.png"/>
         <None Remove="Resources\actionicons\PowerDisplay.png"/>
         <EmbeddedResource Include="Resources\actionicons\PowerDisplay.png"/>
     </ItemGroup>
